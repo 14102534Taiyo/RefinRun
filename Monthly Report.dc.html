@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-24fae3d0-023c-4327-a026-1168885f9bad/styles.css">
+<script src="_ds/modernist-24fae3d0-023c-4327-a026-1168885f9bad/_ds_bundle.js"></script>
+<script src="crude-data.js"></script>
+<script src="xlsx-writer.js"></script>
+<style>
+doc-page:not(:defined){visibility:hidden}
+@media print{[data-noprint]{display:none !important}[data-fit]{zoom:1 !important}}
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#201e1d"/><text x="30" y="62" font-family="Archivo,system-ui,sans-serif" font-size="30" font-weight="800" fill="#f3f2f2">MR</text></svg></template>
+
+<div data-noprint style="position:relative;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:14px 24px;background:var(--color-text);color:var(--color-neutral-100);font-family:var(--font-body)">
+  <div style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase">Report month</div>
+  <div style="display:flex;border:2px solid var(--color-neutral-100)">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+      <div onClick="{{ t.pick }}" style="cursor:pointer;padding:7px 18px;font-size:13px;font-weight:800;background:{{ t.bg }};color:{{ t.fg }};border-left:2px solid var(--color-neutral-100)">{{ t.label }}</div>
+    </sc-for>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+  <div style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase">Rows</div>
+  <div style="display:flex;border:2px solid var(--color-neutral-100)">
+    <sc-for list="{{ rowBys }}" as="r" hint-placeholder-count="3">
+      <div onClick="{{ r.pick }}" style="cursor:pointer;padding:7px 16px;font-size:13px;font-weight:800;background:{{ r.bg }};color:{{ r.fg }};border-left:2px solid var(--color-neutral-100)">{{ r.label }}</div>
+    </sc-for>
+  </div>
+  </div>
+  <div style="font-size:12px;color:var(--color-neutral-400);max-width:340px">{{ src }} · Click a region row to collapse it. The PDF prints exactly what is shown.</div>
+  <select value="" onChange="{{ onExportChange }}" style="cursor:pointer;margin-left:auto;padding:8px 16px;font-size:13px;font-weight:800;background:var(--color-accent);color:#fff;border:none">
+    <option value="" disabled>Export ▾</option>
+    <option value="xlsx">Export to Excel</option>
+    <option value="pdf">Export to PDF</option>
+  </select>
+</div>
+
+<div data-fit style="zoom:{{ fit }}">
+<doc-page orientation="{{ orient }}" margin="0.5in">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--color-divider);padding-bottom:10px">
+    <div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-700)">Crude &amp; condensate intake · Thailand</div>
+      <h1 style="font-size:26px;margin:4px 0 0">Monthly Refinery Run Report</h1>
+    </div>
+    <div style="text-align:left;font-size:11px;line-height:1.5;color:var(--color-neutral-700)">
+      <div style="font-size:16px;font-weight:800;color:var(--color-text)">{{ monthTitle }}</div>
+      <div>Volume in {{ unitLabel }} · Avg in KBD (1 bbl = 158.987 L)</div>
+      <div>Source: DOEB / PEIT</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--color-divider);padding:10px 0 12px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="flex:1;padding-left:14px;border-left:2px solid var(--color-divider)">
+        <div style="font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-700)">{{ k.label }}</div>
+        <div style="font-size:22px;font-weight:800;line-height:1.15">{{ k.value }}</div>
+        <div style="font-size:10px;color:var(--color-neutral-700)">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:{{ fs }};table-layout:fixed">
+    <thead>
+      <tr>
+        <th style="width:9.5%;text-align:left;padding:7px 8px;border-bottom:2px solid var(--color-text);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase">Type</th>
+        <th style="text-align:left;padding:7px 8px;border-bottom:2px solid var(--color-text);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase">Name / Origin</th>
+        <sc-for list="{{ cols }}" as="c" hint-placeholder-count="7">
+          <th style="width:6.2%;text-align:right;padding:7px 8px;border-bottom:2px solid var(--color-text);font-size:9.5px;letter-spacing:.06em">{{ c.label }}</th>
+        </sc-for>
+        <th style="width:8.5%;text-align:right;padding:7px 8px;border-bottom:2px solid var(--color-text);font-size:9.5px;letter-spacing:.06em">Total</th>
+        <th style="width:8.5%;text-align:right;padding:7px 8px;border-bottom:2px solid var(--color-text);font-size:9.5px;letter-spacing:.06em">Avg (KBD)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
+        <tr onClick="{{ r.toggle }}" style="background:{{ r.bg }};break-inside:avoid;cursor:{{ r.cursor }}">
+          <td style="padding:5px 8px;border-bottom:1px solid var(--color-neutral-300);font-size:9.5px;letter-spacing:.04em;color:{{ r.typeFg }}">{{ r.type }}</td>
+          <td style="padding:5px 8px 5px {{ r.indent }};border-bottom:1px solid var(--color-neutral-300);font-weight:{{ r.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.label }}</td>
+          <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="7">
+            <td style="padding:5px 5px;border-bottom:1px solid var(--color-neutral-300);text-align:right;font-weight:{{ r.weight }};font-variant-numeric:tabular-nums">{{ c.v }}</td>
+          </sc-for>
+          <td style="padding:5px 5px;border-bottom:1px solid var(--color-neutral-300);text-align:right;font-weight:800;font-variant-numeric:tabular-nums">{{ r.total }}</td>
+          <td style="padding:5px 5px;border-bottom:1px solid var(--color-neutral-300);text-align:right;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ r.avg }}</td>
+        </tr>
+      </sc-for>
+      <tr>
+        <td style="padding:8px;border-top:2px solid var(--color-text);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase" colSpan="2">Grand total</td>
+        <sc-for list="{{ grand.cells }}" as="c" hint-placeholder-count="7">
+          <td style="padding:8px;border-top:2px solid var(--color-text);text-align:right;font-weight:800;font-variant-numeric:tabular-nums">{{ c.v }}</td>
+        </sc-for>
+        <td style="padding:8px;border-top:2px solid var(--color-text);text-align:right;font-weight:800;color:var(--color-accent-700);font-variant-numeric:tabular-nums">{{ grand.total }}</td>
+        <td style="padding:8px;border-top:2px solid var(--color-text);text-align:right;font-weight:800;font-variant-numeric:tabular-nums">{{ grand.avg }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:12px;font-size:9.5px;color:var(--color-neutral-700)">Blank cell = no cargo recorded for that refinery. Regions follow the PEIT area classification; a cargo's loading area may differ from the crude's origin country.</p>
+</doc-page>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;unitLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Million Litres&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Labels&quot;},&quot;liveSync&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Data&quot;},&quot;sheetId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1EVC_vDXJ5fxVFv3KbVZV_zhqb9ts7GlTLvwzROEgYpg&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data&quot;}}">
+class Component extends DCLogic {
+  state = { m: null, live: null, src: "", fit: 1, rowBy: "Crude / Origin", collapsed: {}, orient: "portrait" };
+
+  ROWBY = { "Crude / Origin": r => r[1] + " / " + r[2], "Origin country": r => r[2], "Crude grade": r => r[1] };
+
+  get SHEET_W() { return this.state.orient === "portrait" ? 864 : 1104; }
+
+  fitCalc = () => {
+    const f = Math.min(1, (window.innerWidth - 8) / this.SHEET_W);
+    if (Math.abs(f - this.state.fit) > 0.005) this.setState({ fit: f });
+  };
+
+  componentWillUnmount() { window.removeEventListener("resize", this.fitCalc); }
+
+  MORDER = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  LONG = { Jan:"January", Feb:"February", Mar:"March", Apr:"April", May:"May", Jun:"June", Jul:"July", Aug:"August", Sep:"September", Oct:"October", Nov:"November", Dec:"December" };
+  DAYS = { Jan:31, Feb:28, Mar:31, Apr:30, May:31, Jun:30, Jul:31, Aug:31, Sep:30, Oct:31, Nov:30, Dec:31 };
+  COMPS = [["BSRC","BSRC"],["BCP","BCP"],["THAI OIL","Thaioil"],["IRPC","IRPC"],["PTTGC","GC"],["SPRC","SPRC"],["PTT","PTT"]];
+  REGIONS = ["Middle East","Far East","Other"];
+
+  get rows() { return this.state.live || window.CRUDE_ROWS || []; }
+  get months() {
+    const seen = new Set(this.rows.map(r => r[0]));
+    return this.MORDER.filter(m => seen.has(m));
+  }
+
+  componentDidMount() {
+    this.fitCalc();
+    window.addEventListener("resize", this.fitCalc);
+    if (this.props.liveSync === false) return this.setState({ src: "Bundled snapshot" });
+    const id = this.props.sheetId ?? "1EVC_vDXJ5fxVFv3KbVZV_zhqb9ts7GlTLvwzROEgYpg";
+    this.setState({ src: "Loading from Google Sheet…" });
+    fetch("https://docs.google.com/spreadsheets/d/" + id + "/gviz/tq?tqx=out:csv&_=" + Date.now())
+      .then(r => r.ok ? r.text() : Promise.reject(r.status))
+      .then(t => {
+        const rows = this.parseCsv(t);
+        if (!rows.length) throw new Error("empty");
+        this.setState({ live: rows, src: "Live from Google Sheet · " + rows.length + " rows" });
+      })
+      .catch(() => this.setState({ src: "Bundled snapshot (sheet not reachable)" }));
+  }
+
+  parseCsv(text) {
+    const out = [];
+    text.trim().split(/\r?\n/).slice(1).forEach(line => {
+      const c = []; let cur = "", q = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (q) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+        else if (ch === '"') q = true;
+        else if (ch === ",") { c.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      c.push(cur);
+      if (c.length < 13) return;
+      const vol = parseFloat(c[9]);
+      if (!this.MORDER.includes(c[0].trim()) || !isFinite(vol)) return;
+      out.push([c[0].trim(), c[1].trim(), c[2].trim(), c[12].trim(), c[8].trim(), vol, c[7].trim()]);
+    });
+    return out;
+  }
+
+  save(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  n1(v) { return v ? v.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : ""; }
+  kbd(v, m) { return v ? (v * 1e6 / 158.987 / 1000 / this.DAYS[m]).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : ""; }
+  sum(rs) { return rs.reduce((a, r) => a + r[5], 0); }
+
+  renderVals() {
+    const unitLabel = this.props.unitLabel ?? "Million Litres";
+    const months = this.months;
+    const m = months.includes(this.state.m) ? this.state.m : months[months.length - 1];
+    const mr = this.rows.filter(r => r[0] === m);
+    const comps = this.COMPS.filter(c => this.rows.some(r => r[4] === c[0]));
+    const cellsFor = rs => comps.map(c => ({ v: this.n1(this.sum(rs.filter(r => r[4] === c[0]))) }));
+    const total = this.sum(mr);
+
+    const rows = [];
+    let first = true;
+    this.REGIONS.forEach(rg => {
+      const rr = mr.filter(r => r[3] === rg);
+      if (!rr.length) return;
+      const rTotal = this.sum(rr);
+      const open = !this.state.collapsed[rg];
+      rows.push({
+        type: "", typeFg: "var(--color-neutral-700)", label: (open ? "– " : "+ ") + rg,
+        indent: "8px", weight: "800",
+        bg: "var(--color-neutral-200)", cells: cellsFor(rr),
+        total: this.n1(rTotal), avg: this.kbd(rTotal, m),
+        toggle: () => this.setState(s => ({ collapsed: Object.assign({}, s.collapsed, { [rg]: open }) })),
+        cursor: "pointer"
+      });
+      first = false;
+      if (!open) return;
+      const key = this.ROWBY[this.state.rowBy] || this.ROWBY["Crude / Origin"];
+      const agg = new Map();
+      rr.forEach(r => {
+        const k = key(r);
+        const e = agg.get(k) || { label: k, origin: r[2], crude: r[1], rs: [] };
+        e.rs.push(r); agg.set(k, e);
+      });
+      [...agg.values()]
+        .sort((a, b) => a.origin.localeCompare(b.origin) || a.crude.localeCompare(b.crude))
+        .forEach(e => {
+          const v = this.sum(e.rs);
+          const types = [...new Set(e.rs.map(r => r[6]))];
+          const isCond = types.includes("Condensate");
+          rows.push({
+            type: types.map(t => t === "Condensate" ? "Condensate" : "Crude").join(" / "),
+            typeFg: isCond ? "var(--color-accent-700)" : "var(--color-neutral-700)",
+            label: e.label, indent: "22px", weight: "400", bg: "transparent", cursor: "default", toggle: () => {},
+            cells: cellsFor(e.rs), total: this.n1(v), avg: this.kbd(v, m)
+          });
+        });
+    });
+
+    const cond = this.sum(mr.filter(r => r[6] === "Condensate"));
+    const topOrigin = [...mr.reduce((mp, r) => mp.set(r[2], (mp.get(r[2]) || 0) + r[5]), new Map())]
+      .sort((a, b) => b[1] - a[1])[0];
+    const prev = months[months.indexOf(m) - 1];
+    const prevTotal = prev ? this.sum(this.rows.filter(r => r[0] === prev)) : 0;
+    const d = prevTotal ? (total - prevTotal) / prevTotal * 100 : 0;
+
+    const num = rs => comps.map(c => {
+      const v = this.sum(rs.filter(r => r[4] === c[0]));
+      return v ? +v.toFixed(2) : "";
+    });
+    const kbdN = v => v ? +(v * 1e6 / 158.987 / 1000 / this.DAYS[m]).toFixed(2) : "";
+    const buildXlsx = () => {
+      const out = [
+        { style: "title", cells: ["Monthly Refinery Run Report — " + this.LONG[m] + " 2026"] },
+        { style: "note", cells: ["Volume in " + unitLabel + " · Avg in KBD (1 bbl = 158.987 L) · Source: DOEB / PEIT"] },
+        { style: "data", cells: [] },
+        { style: "header", cells: ["Type", "Region", this.state.rowBy].concat(comps.map(c => c[1])).concat(["Total (" + unitLabel + ")", "Avg (KBD)"]) }
+      ];
+      this.REGIONS.forEach(rg => {
+        const rr = mr.filter(r => r[3] === rg);
+        if (!rr.length) return;
+        const rt = this.sum(rr);
+        out.push({ style: "group", cells: ["", rg, "Region total"].concat(num(rr)).concat([+rt.toFixed(2), kbdN(rt)]) });
+        const key = this.ROWBY[this.state.rowBy] || this.ROWBY["Crude / Origin"];
+        const agg = new Map();
+        rr.forEach(r => { if (!agg.has(key(r))) agg.set(key(r), []); agg.get(key(r)).push(r); });
+        [...agg.entries()].sort((a, b) => a[0].localeCompare(b[0])).forEach(([k, rs]) => {
+          const v = this.sum(rs);
+          out.push({ style: "data", cells: [[...new Set(rs.map(r => r[6]))].join(" / "), rg, k].concat(num(rs)).concat([+v.toFixed(2), kbdN(v)]) });
+        });
+      });
+      out.push({ style: "total", cells: ["", "Grand total", ""].concat(num(mr)).concat([+total.toFixed(2), kbdN(total)]) });
+      return window.makeXlsx({
+        sheet: this.LONG[m] + " 2026",
+        cols: [16, 14, 34].concat(comps.map(() => 11)).concat([14, 12]),
+        freezeRow: 4,
+        rows: out
+      });
+    };
+
+    return {
+      unitLabel, src: this.state.src, fit: this.state.fit,
+      exportCsv: () => this.save("refinery-run-" + m.toLowerCase() + "-2026.xlsx", buildXlsx()),
+      exportPdf: () => window.print(),
+      onExportChange: e => { const v = e.target.value; e.target.value = ""; if (v === "xlsx") this.save("refinery-run-" + m.toLowerCase() + "-2026.xlsx", buildXlsx()); if (v === "pdf") window.print(); },
+      monthTitle: this.LONG[m] + " 2026",
+      tabs: months.map(x => ({
+        label: x, bg: x === m ? "var(--color-accent)" : "transparent",
+        fg: x === m ? "#fff" : "var(--color-neutral-100)",
+        pick: () => this.setState({ m: x })
+      })),
+      kpis: [
+        { label: "Total intake", value: this.n1(total), note: unitLabel + " · " + this.kbd(total, m) + " KBD" },
+        { label: "vs " + (prev ? this.LONG[prev] : "prior month"), value: (d >= 0 ? "+" : "") + d.toFixed(1) + "%", note: prev ? this.n1(prevTotal) + " last month" : "no prior month" },
+        { label: "Condensate share", value: total ? (cond / total * 100).toFixed(1) + "%" : "0%", note: this.n1(cond) + " " + unitLabel },
+        { label: "Largest origin", value: topOrigin ? topOrigin[0] : "—", note: topOrigin ? this.n1(topOrigin[1]) + " " + unitLabel : "" }
+      ],
+      cols: comps.map(c => ({ label: c[1] })),
+      orient: this.state.orient,
+      fs: this.state.orient === "portrait" ? "8.5px" : "10.5px",
+      orients: ["landscape", "portrait"].map(o => ({
+        label: o === "landscape" ? "Landscape" : "Portrait",
+        bg: o === this.state.orient ? "var(--color-accent)" : "transparent",
+        fg: o === this.state.orient ? "#fff" : "var(--color-neutral-100)",
+        pick: () => this.setState({ orient: o }, this.fitCalc)
+      })),
+      rowBys: Object.keys(this.ROWBY).map(k => ({
+        label: k,
+        bg: k === this.state.rowBy ? "var(--color-accent)" : "transparent",
+        fg: k === this.state.rowBy ? "#fff" : "var(--color-neutral-100)",
+        pick: () => this.setState({ rowBy: k })
+      })),
+      rows,
+      grand: { cells: cellsFor(mr), total: this.n1(total), avg: this.kbd(total, m) }
+    };
+  }
+}
+</script>
+</body>
+</html>
